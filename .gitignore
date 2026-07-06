@@ -1,0 +1,13 @@
+# Ignore Google service account credentials
+service_account.json
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+env/
+
+# OS junk
+.DS_Store

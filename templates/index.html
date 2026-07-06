@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHPE Analytics Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+</head>
+<body>
+
+  <!-- ───── SIDEBAR ───── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">S</div>
+      <div>
+        <div class="logo-title">SHPE</div>
+        <div class="logo-sub">Analytics</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Reports
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Trends
+      </a>
+    </nav>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Data Selection -->
+    <div class="sidebar-section-label">DATA SELECTION</div>
+
+    <div class="form-steps">
+
+      <!-- Step 1 -->
+      <div class="form-step">
+        <div class="step-label">
+          <span class="step-pill" id="pill-1">1</span>
+          Academic Year
+        </div>
+        <select class="sel" id="year-select" disabled>
+          <option value="">Loading…</option>
+        </select>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="form-step" id="step-2">
+        <div class="step-label">
+          <span class="step-pill locked" id="pill-2">2</span>
+          Quarter
+        </div>
+        <select class="sel" id="quarter-select" disabled>
+          <option value="">Select a year first</option>
+        </select>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="form-step" id="step-3">
+        <div class="step-label">
+          <span class="step-pill locked" id="pill-3">3</span>
+          Meeting Scope
+        </div>
+        <div class="scope-toggle">
+          <button class="scope-btn active" id="btn-quarter" onclick="setScope('quarter')">Entire Quarter</button>
+          <button class="scope-btn" id="btn-meeting" onclick="setScope('meeting')">Specific</button>
+        </div>
+        <select class="sel mt-xs" id="meeting-select" disabled style="display:none;">
+          <option value="">Select a meeting…</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Chart Config -->
+    <div class="sidebar-section-label">CHART CONFIG</div>
+
+    <div class="config-block">
+      <div class="config-row">
+        <span class="config-label">Year</span>
+        <select class="sel sel-sm" id="year-chart-type">
+          <option value="bar">Bar</option>
+          <option value="horizontalBar">Horiz. Bar</option>
+          <option value="pie">Pie</option>
+          <option value="none">Hide</option>
+        </select>
+      </div>
+      <div class="config-row">
+        <span class="config-label">Gender</span>
+        <select class="sel sel-sm" id="gender-chart-type">
+          <option value="bar">Bar</option>
+          <option value="horizontalBar">Horiz. Bar</option>
+          <option value="pie" selected>Pie</option>
+          <option value="none">Hide</option>
+        </select>
+      </div>
+      <div class="config-row">
+        <span class="config-label">Major</span>
+        <select class="sel sel-sm" id="major-chart-type">
+          <option value="bar">Bar</option>
+          <option value="horizontalBar" selected>Horiz. Bar</option>
+          <option value="pie">Pie</option>
+          <option value="none">Hide</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Palette -->
+    <div class="sidebar-section-label">COLOR PALETTE</div>
+    <div class="palette-grid" id="palette-grid"></div>
+
+    <!-- Generate -->
+    <button class="gen-btn" id="gen-btn" onclick="generate()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Generate Charts
+    </button>
+  </aside>
+
+  <!-- ───── MAIN ───── -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <h1 class="topbar-title">Meeting Metrics Dashboard</h1>
+        <div class="topbar-crumb" id="topbar-crumb">Select data from the left panel to get started</div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-chip" id="status-chip">
+          <span class="chip-dot"></span>
+          <span id="status-text">Ready</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val" id="stat-total">—</div>
+          <div class="stat-lbl">Total Attendees</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val" id="stat-meetings">—</div>
+          <div class="stat-lbl">Meetings Analyzed</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val" id="stat-gender">—</div>
+          <div class="stat-lbl">Gender Ratio (M/F)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val" id="stat-major">—</div>
+          <div class="stat-lbl">Top Major</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content area -->
+    <div class="content-area">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-gfx">
+          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="60" r="56" stroke="rgba(124,58,237,0.2)" stroke-width="2" stroke-dasharray="8 4"/>
+            <rect x="30" y="50" width="12" height="30" rx="3" fill="rgba(124,58,237,0.3)"/>
+            <rect x="50" y="38" width="12" height="42" rx="3" fill="rgba(99,102,241,0.4)"/>
+            <rect x="70" y="44" width="12" height="36" rx="3" fill="rgba(139,92,246,0.35)"/>
+            <circle cx="60" cy="25" r="6" fill="rgba(124,58,237,0.5)"/>
+            <line x1="60" y1="31" x2="60" y2="38" stroke="rgba(124,58,237,0.5)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="empty-title">No Data Loaded</div>
+        <div class="empty-sub">Select a year → quarter → scope from the left panel,<br>then click <strong>Generate Charts</strong> to visualize attendance data.</div>
+      </div>
+
+      <!-- Loading state -->
+      <div class="loading-state" id="loading-state" style="display:none;">
+        <div class="spinner-ring"></div>
+        <div class="loading-title">Loading Spreadsheet Data</div>
+        <div class="loading-sub">Fetching and normalizing meeting records from Google Drive…</div>
+      </div>
+
+      <!-- Error state -->
+      <div class="error-state" id="error-state" style="display:none;">
+        <div class="error-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="error-title">Something went wrong</div>
+        <div class="error-msg" id="error-msg"></div>
+        <button class="retry-btn" onclick="generate()">Try Again</button>
+      </div>
+
+      <!-- Charts area -->
+      <div class="charts-area" id="charts-area" style="display:none;">
+        <div class="charts-grid" id="charts-grid">
+
+          <!-- Year -->
+          <div class="chart-card" id="year-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title" id="year-title">Year Distribution</div>
+                <div class="chart-card-sub" id="year-sub"></div>
+              </div>
+              <button class="dl-btn" onclick="downloadChart('year-canvas', 'Year Distribution')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+            <div class="canvas-wrap" id="year-wrap">
+              <canvas id="year-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Gender -->
+          <div class="chart-card" id="gender-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title" id="gender-title">Gender Distribution</div>
+                <div class="chart-card-sub" id="gender-sub"></div>
+              </div>
+              <button class="dl-btn" onclick="downloadChart('gender-canvas', 'Gender Distribution')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+            <div class="canvas-wrap" id="gender-wrap">
+              <canvas id="gender-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Major -->
+          <div class="chart-card" id="major-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title" id="major-title">Major Distribution</div>
+                <div class="chart-card-sub" id="major-sub"></div>
+              </div>
+              <button class="dl-btn" onclick="downloadChart('major-canvas', 'Major Distribution')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+            <div class="canvas-wrap" id="major-wrap">
+              <canvas id="major-canvas"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="alert">
+    <div class="toast-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="toast-body">
+      <div class="toast-title" id="toast-title">No metrics found</div>
+      <div class="toast-msg" id="toast-msg"></div>
+    </div>
+    <button class="toast-close" onclick="hideToast()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
