@@ -3,7 +3,10 @@ Quick diagnostic: tests service account auth + Drive folder access.
 Run with:  python test_connection.py
 """
 
-ROOT_FOLDER_ID = "0B5x6_lwAEhFZdkJnY3c1X1NxTVE"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+ROOT_FOLDER_ID = os.environ.get("ROOT_FOLDER_ID")
 
 print("=" * 55)
 print("  SHPE Analytics — Service Account Diagnostic")

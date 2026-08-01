@@ -2,6 +2,9 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_httplib2 import AuthorizedHttp
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 import httplib2
 import random
@@ -14,7 +17,7 @@ import pandas as pd
 
 
 # -------- Drive/API Setup --------------
-SERVICE_ACCOUNT_FILE = "service_account.json"
+SERVICE_ACCOUNT_FILE = os.environ.get("SERVICE_ACCOUNT_FILE", "service_account.json")
 
 SCOPES = [
     "https://www.googleapis.com/auth/drive.readonly",

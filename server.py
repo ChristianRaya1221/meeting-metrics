@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, render_template
 import os, sys
+from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,7 +18,8 @@ from backend import (
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
-ROOT_FOLDER_ID = "0B5x6_lwAEhFZdkJnY3c1X1NxTVE"
+load_dotenv()
+ROOT_FOLDER_ID = os.environ.get("ROOT_FOLDER_ID")
 
 _drive = None
 _sheets_svc = None
