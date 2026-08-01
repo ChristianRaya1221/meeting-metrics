@@ -2,26 +2,45 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:          #080818;
-  --bg2:         #0d0d28;
-  --sidebar-bg:  #0a0a22;
-  --card-bg:     #111130;
-  --card-bg2:    #13133a;
-  --border:      rgba(124, 58, 237, 0.18);
-  --border-h:    rgba(124, 58, 237, 0.45);
-  --accent:      #7c3aed;
-  --accent2:     #6366f1;
-  --accent-glow: rgba(124, 58, 237, 0.35);
-  --cyan:        #06b6d4;
-  --green:       #10b981;
-  --red:         #f43f5e;
-  --txt:         #e2e8f0;
-  --txt2:        #94a3b8;
-  --txt3:        #475569;
-  --radius:      14px;
-  --radius-sm:   8px;
-  --sidebar-w:   268px;
-  --transition:  0.2s ease;
+  /* ── Backgrounds ── */
+  --bg:            #05080F;
+  --bg2:           #0B111C;
+  --sidebar-bg:    #0B111C;
+  --card-bg:       #0B111C;
+  --card-bg2:      #111827;
+
+  /* ── Borders ── */
+  --border:        #1A2333;
+  --border-h:      #2A3548;
+
+  /* ── SHPE Blues ── */
+  --accent:        #003DA5;   /* SHPE primary — buttons, key accents */
+  --accent-hover:  #0050D0;   /* SHPE primary hover state */
+  --accent2:       #2563EB;   /* Interactive elements, focus rings */
+  --accent-bright: #4A9EFF;   /* Highlights, data emphasis, one accent petal */
+  --accent-glow:   rgba(37, 99, 235, 0.25);
+
+  /* ── Text ── */
+  --txt:           #E5EDF7;
+  --txt2:          #7A8CA6;
+  --txt3:          #4A5C7A;
+
+  /* ── Semantic (deltas + status) ── */
+  --green:         #22C55E;   /* Positive deltas, success */
+  --red:           #EF4444;   /* Negative deltas, errors */
+  --cyan:          #06B6D4;   /* Kept for chart palette variety */
+
+  /* ── Typography ── */
+  --font-sans:     'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Consolas', monospace;
+
+  /* ── Radius ── */
+  --radius:        10px;
+  --radius-sm:     6px;
+
+  /* ── Layout ── */
+  --sidebar-w:     268px;
+  --transition:    0.15s ease;
 }
 
 html, body {
