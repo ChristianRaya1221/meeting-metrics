@@ -380,16 +380,53 @@ body { display: flex; overflow: hidden; height: 100vh; }
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 20px; text-align: center;
 }
-.spinner-ring {
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  border: 3px solid rgba(124,58,237,0.2);
-  border-top-color: var(--accent);
-  animation: spin 0.9s linear infinite;
+
+/* ── SHPE spiral loader ── */
+.shpe-loader {
+  width: 88px;
+  height: 88px;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-title { font-size: 16px; font-weight: 600; color: var(--txt); }
-.loading-sub   { font-size: 13px; color: var(--txt2); }
+
+.shpe-loader .petal {
+  transform-origin: 89px 79px;
+  animation: petalBreathe 3.6s ease-in-out infinite;
+  opacity: 0;
+}
+
+.shpe-loader .p1 { animation-delay: 0.00s; }
+.shpe-loader .p2 { animation-delay: 0.05s; }
+.shpe-loader .p3 { animation-delay: 0.10s; }
+.shpe-loader .p4 { animation-delay: 0.15s; }
+
+@keyframes petalBreathe {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  20%  { transform: scale(1);   opacity: 1;   }
+  75%  { transform: scale(1);   opacity: 1;   }
+  92%  { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(0.6); opacity: 0.9; }
+}
+
+/* Typewriter status text below the logo */
+.loader-typewriter {
+  color: var(--txt2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  min-height: 20px;
+  letter-spacing: 0.02em;
+}
+
+.tw-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  animation: cursorBlink 1s steps(2) infinite;
+  color: var(--accent-bright);
+  font-weight: 500;
+}
+
+@keyframes cursorBlink {
+  0%, 50%  { opacity: 1; }
+  51%, 100%{ opacity: 0; }
+}
 
 /* ── Error state ── */
 .error-state {

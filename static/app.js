@@ -1,3 +1,60 @@
+
+// ══════════════════════════════════════════
+//  TYPEWRITER — status text for loader
+// ══════════════════════════════════════════
+const LOADER_MESSAGES = [
+  'Authenticating',
+  'Reading sheets',
+  'Normalizing data',
+  'Rendering charts',
+];
+
+let _typewriterInterval = null;
+let _twIndex = 0;
+
+function startTypewriter() {
+  stopTypewriter();
+  _twIndex = 0;
+  typeMessage(LOADER_MESSAGES[0]);
+}
+
+function stopTypewriter() {
+  if (_typewriterInterval) {
+    clearTimeout(_typewriterInterval);
+    _typewriterInterval = null;
+  }
+}
+
+function typeMessage(msg) {
+  const el = document.getElementById('loader-typewriter');
+  if (!el) return;
+  let i = 0;
+  el.innerHTML = '<span class="tw-cursor">▍</span>';
+
+  const typeStep = () => {
+    if (i <= msg.length) {
+      el.innerHTML = msg.slice(0, i) + '<span class="tw-cursor">▍</span>';
+      i++;
+      _typewriterInterval = setTimeout(typeStep, 30);  // fast typing
+    } else {
+      _typewriterInterval = setTimeout(eraseStep, 1200);  // hold before erase
+    }
+  };
+
+  const eraseStep = () => {
+    if (i > 0) {
+      i--;
+      el.innerHTML = msg.slice(0, i) + '<span class="tw-cursor">▍</span>';
+      _typewriterInterval = setTimeout(eraseStep, 20);  // faster erase
+    } else {
+      _twIndex = (_twIndex + 1) % LOADER_MESSAGES.length;
+      _typewriterInterval = setTimeout(() => typeMessage(LOADER_MESSAGES[_twIndex]), 200);
+    }
+  };
+
+  typeStep();
+}
+
 // ══════════════════════════════════════════
 //  TOAST
 // ══════════════════════════════════════════
@@ -550,6 +607,13 @@ function showPanel(panel) {
     charts:  'charts-area',
   };
   if (map[panel]) document.getElementById(map[panel]).style.display = '';
+
+  // Start typewriter when loader shows, stop when it hides
+  if (panel === 'loading') {
+    startTypewriter();
+  } else {
+    stopTypewriter();
+  }
 }
 
 function setStatus(type, text) {
