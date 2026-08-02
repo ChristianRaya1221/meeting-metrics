@@ -485,10 +485,10 @@ body { display: flex; overflow: hidden; height: 100vh; }
 .dl-btn:hover { background: rgba(124,58,237,0.2); border-color: var(--accent); color: #c4b5fd; }
 
 .canvas-wrap {
-  flex: 1;
   position: relative;
-  min-height: 240px;
+  height: 320px;
 }
+
 .canvas-wrap canvas { width: 100% !important; height: 100% !important; }
 
 /* ── Toast ── */
