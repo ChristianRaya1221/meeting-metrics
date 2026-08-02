@@ -383,20 +383,10 @@ body { display: flex; overflow: hidden; height: 100vh; }
 
 /* ── SHPE spiral loader ── */
 .shpe-loader {
-  width: 88px;
-  height: 88px;
+  width: 60px;
+  height: 60px;
+  image-rendering: -webkit-optimize-contrast;
 }
-
-.shpe-loader .petal {
-  transform-origin: 89px 79px;
-  animation: petalBreathe 3.6s ease-in-out infinite;
-  opacity: 0;
-}
-
-.shpe-loader .p1 { animation-delay: 0.00s; }
-.shpe-loader .p2 { animation-delay: 0.05s; }
-.shpe-loader .p3 { animation-delay: 0.10s; }
-.shpe-loader .p4 { animation-delay: 0.15s; }
 
 @keyframes petalBreathe {
   0%   { transform: scale(0.6); opacity: 0.9; }
