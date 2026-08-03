@@ -3,6 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Inline splash: renders before style.css / fonts / CDN so the site never boots into a blank frame -->
+  <style>
+    #page-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background: #05080F;
+      transition: opacity 0.35s ease;
+    }
+    #page-splash.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #page-splash img {
+      width: 180px;
+      height: 180px;
+      image-rendering: -webkit-optimize-contrast;
+      animation: splashSpin 4s linear infinite;
+    }
+    #page-splash .splash-text {
+      color: #94a3b8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+    }
+    @keyframes splashSpin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <script>
+    (function () {
+      function hideSplash() {
+        var el = document.getElementById('page-splash');
+        if (!el || el.classList.contains('hide')) return;
+        el.classList.add('hide');
+        setTimeout(function () { el.remove(); }, 400);
+      }
+      window.addEventListener('load', hideSplash);
+      // Safety net: if load never fires (bad CDN, network hiccup), don't strand the user
+      setTimeout(hideSplash, 8000);
+    })();
+  </script>
   <title>SHPE Analytics Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
@@ -10,6 +57,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 </head>
 <body>
+  <!-- Full-viewport page splash — hides on window.load -->
+  <div id="page-splash">
+    <img src="/static/img/shpe_loader.gif" alt="Loading" />
+    <div class="splash-text">Loading dashboard…</div>
+  </div>
 
   <!-- ───── SIDEBAR ───── -->
   <aside class="sidebar">

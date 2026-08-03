@@ -386,14 +386,11 @@ body { display: flex; overflow: hidden; height: 100vh; }
   width: 60px;
   height: 60px;
   image-rendering: -webkit-optimize-contrast;
+  animation: shpeLoaderSpin 4s linear infinite;
 }
 
-@keyframes petalBreathe {
-  0%   { transform: scale(0.6); opacity: 0.9; }
-  20%  { transform: scale(1);   opacity: 1;   }
-  75%  { transform: scale(1);   opacity: 1;   }
-  92%  { transform: scale(0.6); opacity: 0.9; }
-  100% { transform: scale(0.6); opacity: 0.9; }
+@keyframes shpeLoaderSpin {
+  to { transform: rotate(360deg); }
 }
 
 /* Typewriter status text below the logo */
