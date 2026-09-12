@@ -179,7 +179,7 @@ async function loadYears() {
     sel.disabled = false;
     unlockStep(1);
   } catch (e) {
-    sel.innerHTML = '<option value="">Failed to load — refresh page</option>';
+    sel.innerHTML = '<option value="">Failed to load - refresh page</option>';
   }
 }
 
@@ -389,9 +389,9 @@ async function generate() {
 // ══════════════════════════════════════════
 function updateStats(data) {
   document.getElementById('stat-total').textContent =
-    data.total != null ? data.total.toLocaleString() : '—';
+    data.total != null ? data.total.toLocaleString() : '-';
   document.getElementById('stat-meetings').textContent =
-    data.meetings_count != null ? data.meetings_count : '—';
+    data.meetings_count != null ? data.meetings_count : '-';
 
   // Scope-switching card: Avg per meeting (Quarter) or Peak (Meeting)
   const scopeVal = document.getElementById('stat-scope');
@@ -407,11 +407,11 @@ function updateStats(data) {
       // Meeting scope: peak attendance across the quarter for context
       const peak = data.per_meeting_counts.reduce((a, b) => a.count > b.count ? a : b);
       scopeVal.textContent = peak.count;
-      scopeLbl.textContent = `Peak — ${peak.name}`;
+      scopeLbl.textContent = `Peak - ${peak.name}`;
       scopeLbl.title = peak.name;  // hover tooltip for long meeting names
     }
   } else {
-    scopeVal.textContent = '—';
+    scopeVal.textContent = '-';
     scopeLbl.textContent = 'Attendance';
     scopeLbl.title = '';
   }
@@ -419,9 +419,9 @@ function updateStats(data) {
   // Top major
   if (data.major) {
     const top = Object.entries(data.major).sort((a,b) => b[1]-a[1])[0];
-    document.getElementById('stat-major').textContent = top ? top[0] : '—';
+    document.getElementById('stat-major').textContent = top ? top[0] : '-';
   } else {
-    document.getElementById('stat-major').textContent = '—';
+    document.getElementById('stat-major').textContent = '-';
   }
 }
 
@@ -451,7 +451,7 @@ function renderCharts(data) {
     yCard.style.display = 'none';
   } else {
     yCard.style.display = '';
-    document.getElementById('year-title').textContent = `${prefix} — Year Distribution`;
+    document.getElementById('year-title').textContent = `${prefix} - Year Distribution`;
     const total = Object.values(data.year).reduce((a,b)=>a+b,0);
     document.getElementById('year-sub').textContent = `Total: ${total.toLocaleString()} responses`;
     charts.year = buildChart('year-canvas', yearType, data.year, palette);
@@ -465,11 +465,11 @@ function renderCharts(data) {
     tCard.style.display = '';
     const focus = data.focus_meeting_name;
     if (focus) {
-      document.getElementById('trend-title').textContent = `${focus} in Context`;
+      document.getElementById('trend-title').textContent = `${prefix} in Context`;
       document.getElementById('trend-sub').textContent =
         `Attendance across all ${data.per_meeting_counts.length} meetings this quarter`;
     } else {
-      document.getElementById('trend-title').textContent = `${prefix} — Attendance Trend`;
+      document.getElementById('trend-title').textContent = `${prefix} - Attendance Trend`;
       document.getElementById('trend-sub').textContent =
         `${data.per_meeting_counts.length} meetings this quarter`;
     }
@@ -482,7 +482,7 @@ function renderCharts(data) {
     mCard.style.display = 'none';
   } else {
     mCard.style.display = '';
-    document.getElementById('major-title').textContent = `${prefix} — Major Distribution`;
+    document.getElementById('major-title').textContent = `${prefix} - Major Distribution`;
     const total = Object.values(data.major).reduce((a,b)=>a+b,0);
     document.getElementById('major-sub').textContent = `Total: ${total.toLocaleString()} responses`;
     charts.major = buildChart('major-canvas', majType, data.major, palette);
@@ -658,9 +658,10 @@ function buildTrendChart(perMeetingCounts, focusName, palette) {
             maxRotation: 30,
             minRotation: 0,
             callback: function(value) {
-              // Shorten long meeting names on the x-axis
+              // Strip the scaffolding prefix first, then truncate if still long
               const label = this.getLabelForValue(value);
-              return label.length > 18 ? label.slice(0, 16) + '…' : label;
+              const short = shortMeetingName(label);
+              return short.length > 16 ? short.slice(0, 14) + '…' : short;
             },
           },
           border:{ color: 'rgba(255,255,255,0.08)' },
@@ -775,14 +776,17 @@ function updateBreadcrumb() {
     parts.length ? parts.join(' → ') : 'Select data from the left panel to get started';
 }
 
+function shortMeetingName(name) {
+  const parts = name.split(' - ');
+  return parts.length > 1 ? parts.slice(1).join(' - ') : name;
+}
+
 function buildTitlePrefix() {
-  const parts = [];
-  if (state.quarterObj) parts.push(state.quarterObj.name);
-  if (state.yearObj) {
-    const y = state.yearObj.name.replace(/SHPE\s*/i, '').trim();
-    parts.push(y);
+  if (state.scope === 'meeting' && state.meetingObj) {
+    return shortMeetingName(state.meetingObj.name);
   }
-  return parts.join(' ');
+  if (state.quarterObj) return state.quarterObj.name;
+  return '';
 }
 
 function clearCharts() {
@@ -790,11 +794,11 @@ function clearCharts() {
   charts = { year: null, trend: null, major: null };
   showPanel('empty');
   setStatus('', 'Ready');
-  document.getElementById('stat-total').textContent    = '—';
-  document.getElementById('stat-meetings').textContent = '—';
-  document.getElementById('stat-scope').textContent    = '—';
+  document.getElementById('stat-total').textContent    = '-';
+  document.getElementById('stat-meetings').textContent = '-';
+  document.getElementById('stat-scope').textContent    = '-';
   document.getElementById('stat-scope-lbl').textContent = 'Attendance';
-  document.getElementById('stat-major').textContent    = '—';
+  document.getElementById('stat-major').textContent    = '-';
 }
 
 function resetQuarter() {
