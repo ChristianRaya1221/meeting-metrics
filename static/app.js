@@ -437,9 +437,11 @@ function renderCharts(data) {
 
   // Destroy old charts
   Object.values(charts).forEach(c => c && c.destroy());
-  charts = { year: null, major: null };
+  charts = { year: null, trend: null, major: null };
 
-  const visible = [yearType, majType].filter(t => t !== 'none').length;
+  // Trend chart is always visible when we have per-meeting data (both scopes)
+  const trendVisible = !!(data.per_meeting_counts && data.per_meeting_counts.length > 0);
+  const visible = [yearType, majType].filter(t => t !== 'none').length + (trendVisible ? 1 : 0);
   const grid = document.getElementById('charts-grid');
   grid.className = `charts-grid col-${Math.max(visible, 1)}`;
 
@@ -453,6 +455,25 @@ function renderCharts(data) {
     const total = Object.values(data.year).reduce((a,b)=>a+b,0);
     document.getElementById('year-sub').textContent = `Total: ${total.toLocaleString()} responses`;
     charts.year = buildChart('year-canvas', yearType, data.year, palette);
+  }
+
+  // Attendance Trend
+  const tCard = document.getElementById('trend-card');
+  if (!trendVisible) {
+    tCard.style.display = 'none';
+  } else {
+    tCard.style.display = '';
+    const focus = data.focus_meeting_name;
+    if (focus) {
+      document.getElementById('trend-title').textContent = `${focus} in Context`;
+      document.getElementById('trend-sub').textContent =
+        `Attendance across all ${data.per_meeting_counts.length} meetings this quarter`;
+    } else {
+      document.getElementById('trend-title').textContent = `${prefix} — Attendance Trend`;
+      document.getElementById('trend-sub').textContent =
+        `${data.per_meeting_counts.length} meetings this quarter`;
+    }
+    charts.trend = buildTrendChart(data.per_meeting_counts, focus, palette);
   }
 
   // Major
@@ -574,6 +595,104 @@ function buildChart(canvasId, type, dataObj, palette) {
 }
 
 // ══════════════════════════════════════════
+//  ATTENDANCE TREND (line chart)
+// ══════════════════════════════════════════
+function buildTrendChart(perMeetingCounts, focusName, palette) {
+  const canvas = document.getElementById('trend-canvas');
+  const labels = perMeetingCounts.map(m => m.name);
+  const values = perMeetingCounts.map(m => m.count);
+
+  const brand = palette[0];       // primary accent from selected palette
+  const muted = 'rgba(148, 163, 184, 0.55)';  // slate-400ish
+
+  // Per-point styling: if a focus meeting is set, that point is enlarged +
+  // brand-colored; all others fade to muted. In quarter view, every point
+  // gets the brand color at equal size.
+  const pointRadius = perMeetingCounts.map(m =>
+    focusName ? (m.name === focusName ? 8 : 4) : 5
+  );
+  const pointHoverRadius = perMeetingCounts.map(m =>
+    focusName ? (m.name === focusName ? 10 : 6) : 7
+  );
+  const pointColors = perMeetingCounts.map(m =>
+    focusName ? (m.name === focusName ? brand : muted) : brand
+  );
+  const pointBorderColors = perMeetingCounts.map(m =>
+    focusName ? (m.name === focusName ? '#fff' : muted) : brand
+  );
+
+  // Gradient fill under the line
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+  gradient.addColorStop(0, brand + '55');   // ~33% alpha at top
+  gradient.addColorStop(1, brand + '00');   // fully transparent at bottom
+
+  return new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: focusName ? muted : brand,
+        backgroundColor: gradient,
+        borderWidth: 2,
+        tension: 0.35,             // smooth curve
+        fill: true,
+        pointRadius,
+        pointHoverRadius,
+        pointBackgroundColor: pointColors,
+        pointBorderColor: pointBorderColors,
+        pointBorderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 22, right: 12, left: 4, bottom: 4 } },
+      scales: {
+        x: {
+          grid:  { color: 'rgba(255,255,255,0.05)' },
+          ticks: {
+            color: '#64748b',
+            font: { size: 11 },
+            maxRotation: 30,
+            minRotation: 0,
+            callback: function(value) {
+              // Shorten long meeting names on the x-axis
+              const label = this.getLabelForValue(value);
+              return label.length > 18 ? label.slice(0, 16) + '…' : label;
+            },
+          },
+          border:{ color: 'rgba(255,255,255,0.08)' },
+        },
+        y: {
+          beginAtZero: true,
+          grid:  { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#64748b', font: { size: 11 } },
+          border:{ color: 'rgba(255,255,255,0.08)' },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(13,13,40,0.92)',
+          titleColor: '#e2e8f0',
+          bodyColor: '#94a3b8',
+          borderColor: brand + '66',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            title: items => items[0].label,   // full meeting name in tooltip
+            label: ctx => ` ${ctx.parsed.y} attendees`,
+          },
+        },
+        datalabels: { display: false },
+      },
+    },
+  });
+}
+
+// ══════════════════════════════════════════
 //  DOWNLOAD
 // ══════════════════════════════════════════
 function downloadChart(canvasId, name) {
@@ -668,7 +787,7 @@ function buildTitlePrefix() {
 
 function clearCharts() {
   Object.values(charts).forEach(c => c && c.destroy());
-  charts = { year: null, major: null };
+  charts = { year: null, trend: null, major: null };
   showPanel('empty');
   setStatus('', 'Ready');
   document.getElementById('stat-total').textContent    = '—';

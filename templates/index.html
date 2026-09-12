@@ -266,6 +266,21 @@
               <canvas id="year-canvas"></canvas>
             </div>
           </div>
+          <!-- Attendance Trend -->
+          <div class="chart-card" id="trend-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title" id="trend-title">Attendance Trend</div>
+                <div class="chart-card-sub" id="trend-sub"></div>
+              </div>
+              <button class="dl-btn" onclick="downloadChart('trend-canvas', 'Attendance Trend')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+            <div class="canvas-wrap" id="trend-wrap">
+              <canvas id="trend-canvas"></canvas>
+            </div>
+          </div>
           <!-- Major -->
           <div class="chart-card" id="major-card">
             <div class="chart-card-header">
