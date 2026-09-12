@@ -89,7 +89,7 @@ const PALETTES = {
   'Dark Gradient': ['#1e3a5f','#4c1d95','#1e1b4b','#14532d','#451a03','#be185d','#0e7490','#3f6212'],
 };
 
-let selectedPalette = 'Professional';
+let selectedPalette = null;
 
 // ══════════════════════════════════════════
 //  STATE
@@ -100,13 +100,13 @@ const state = {
   meetings:  [],
   yearObj:   null,   // {id, name}
   quarterObj:null,
-  scope:     'quarter',
+  scope:     null,
   meetingObj:null,
   chartData: null,
   loading:   false,
 };
 
-let charts = { year: null, gender: null, major: null };
+let charts = { year: null, major: null };
 
 // ══════════════════════════════════════════
 //  INIT
@@ -134,11 +134,12 @@ function buildPaletteGrid() {
       sw.appendChild(dot);
     });
     sw.addEventListener('click', () => {
-      selectedPalette = name;
-      document.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('selected'));
-      sw.classList.add('selected');
-      if (state.chartData) renderCharts(state.chartData);
-    });
+    selectedPalette = name;
+    document.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('selected'));
+    sw.classList.add('selected');
+    updateGenBtn();
+    if (state.chartData) renderCharts(state.chartData);
+  });
     grid.appendChild(sw);
   }
 }
@@ -150,7 +151,7 @@ function wireSelects() {
   document.getElementById('year-select').addEventListener('change', onYearChange);
   document.getElementById('quarter-select').addEventListener('change', onQuarterChange);
   document.getElementById('meeting-select').addEventListener('change', onMeetingChange);
-  ['year-chart-type','gender-chart-type','major-chart-type'].forEach(id => {
+    ['year-chart-type','major-chart-type'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => {
       if (state.chartData) renderCharts(state.chartData);
     });
@@ -323,6 +324,7 @@ function setScope(scope) {
   meetSel.style.display = scope === 'meeting' ? 'block' : 'none';
   meetSel.value = '';
 
+  setPostScopeEnabled(true);
   updateGenBtn();
   updateBreadcrumb();
 }
@@ -333,13 +335,14 @@ function setScope(scope) {
 async function generate() {
   if (!canGenerate()) return;
 
-  // Build file list
-  let files;
-  if (state.scope === 'quarter') {
-    files = state.meetings.map(m => ({ id: m.id, name: m.name }));
-  } else {
-    files = [{ id: state.meetingObj.id, name: state.meetingObj.name }];
-  }
+  // Always send all quarter files — the line chart needs full quarter shape,
+  // even when the user has drilled into a single meeting.
+  const files = state.meetings.map(m => ({ id: m.id, name: m.name }));
+
+  // When focused on one meeting, tell backend to filter aggregates to just it.
+  const focus_meeting_name = (state.scope === 'meeting' && state.meetingObj)
+    ? state.meetingObj.name
+    : null;
 
   setLoading(true);
   showPanel('loading');
@@ -348,16 +351,15 @@ async function generate() {
     const res  = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files }),
+      body: JSON.stringify({ files, focus_meeting_name }),
     });
     const data = await res.json();
     if (!res.ok) {
       const msg = data.error || 'Server error';
-      // "No data" means the spreadsheet exists but has no recognised columns
       if (msg.toLowerCase().includes('no data')) {
         showToast(
           'No metrics found',
-          'This meeting\'s spreadsheet doesn\'t contain recognised Year, Gender, or Major columns.'
+          'This meeting\'s spreadsheet doesn\'t contain recognised Year or Major columns.'
         );
         showPanel('empty');
         setStatus('', 'Ready');
@@ -391,13 +393,27 @@ function updateStats(data) {
   document.getElementById('stat-meetings').textContent =
     data.meetings_count != null ? data.meetings_count : '—';
 
-  // Gender ratio
-  if (data.gender) {
-    const m = data.gender['Male'] || 0;
-    const f = data.gender['Female'] || 0;
-    document.getElementById('stat-gender').textContent = `${m} / ${f}`;
+  // Scope-switching card: Avg per meeting (Quarter) or Peak (Meeting)
+  const scopeVal = document.getElementById('stat-scope');
+  const scopeLbl = document.getElementById('stat-scope-lbl');
+  if (data.per_meeting_counts && data.per_meeting_counts.length > 0) {
+    if (state.scope === 'quarter') {
+      const counts = data.per_meeting_counts.map(m => m.count);
+      const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
+      scopeVal.textContent = Math.round(avg);
+      scopeLbl.textContent = 'Avg / Meeting';
+      scopeLbl.title = '';
+    } else {
+      // Meeting scope: peak attendance across the quarter for context
+      const peak = data.per_meeting_counts.reduce((a, b) => a.count > b.count ? a : b);
+      scopeVal.textContent = peak.count;
+      scopeLbl.textContent = `Peak — ${peak.name}`;
+      scopeLbl.title = peak.name;  // hover tooltip for long meeting names
+    }
   } else {
-    document.getElementById('stat-gender').textContent = '—';
+    scopeVal.textContent = '—';
+    scopeLbl.textContent = 'Attendance';
+    scopeLbl.title = '';
   }
 
   // Top major
@@ -415,16 +431,15 @@ function updateStats(data) {
 function renderCharts(data) {
   const palette   = PALETTES[selectedPalette] || PALETTES['Professional'];
   const yearType  = document.getElementById('year-chart-type').value;
-  const genType   = document.getElementById('gender-chart-type').value;
   const majType   = document.getElementById('major-chart-type').value;
 
   const prefix = buildTitlePrefix();
 
   // Destroy old charts
   Object.values(charts).forEach(c => c && c.destroy());
-  charts = { year: null, gender: null, major: null };
+  charts = { year: null, major: null };
 
-  const visible = [yearType, genType, majType].filter(t => t !== 'none').length;
+  const visible = [yearType, majType].filter(t => t !== 'none').length;
   const grid = document.getElementById('charts-grid');
   grid.className = `charts-grid col-${Math.max(visible, 1)}`;
 
@@ -438,18 +453,6 @@ function renderCharts(data) {
     const total = Object.values(data.year).reduce((a,b)=>a+b,0);
     document.getElementById('year-sub').textContent = `Total: ${total.toLocaleString()} responses`;
     charts.year = buildChart('year-canvas', yearType, data.year, palette);
-  }
-
-  // Gender
-  const gCard = document.getElementById('gender-card');
-  if (genType === 'none' || !data.gender) {
-    gCard.style.display = 'none';
-  } else {
-    gCard.style.display = '';
-    document.getElementById('gender-title').textContent = `${prefix} — Gender Distribution`;
-    const total = Object.values(data.gender).reduce((a,b)=>a+b,0);
-    document.getElementById('gender-sub').textContent = `Total: ${total.toLocaleString()} responses`;
-    charts.gender = buildChart('gender-canvas', genType, data.gender, palette);
   }
 
   // Major
@@ -617,7 +620,9 @@ function showPanel(panel) {
 }
 
 function setStatus(type, text) {
+  // Status chip removed from UI; retained as no-op so existing call sites don't error.
   const chip = document.getElementById('status-chip');
+  if (!chip) return;
   chip.className = `status-chip ${type}`;
   document.getElementById('status-text').textContent = text;
 }
@@ -630,7 +635,9 @@ function setLoading(val) {
 
 function canGenerate() {
   if (!state.quarterObj || state.meetings.length === 0) return false;
+  if (!state.scope) return false;
   if (state.scope === 'meeting' && !state.meetingObj) return false;
+  if (!selectedPalette) return false;
   return true;
 }
 
@@ -661,12 +668,13 @@ function buildTitlePrefix() {
 
 function clearCharts() {
   Object.values(charts).forEach(c => c && c.destroy());
-  charts = { year: null, gender: null, major: null };
+  charts = { year: null, major: null };
   showPanel('empty');
   setStatus('', 'Ready');
   document.getElementById('stat-total').textContent    = '—';
   document.getElementById('stat-meetings').textContent = '—';
-  document.getElementById('stat-gender').textContent   = '—';
+  document.getElementById('stat-scope').textContent    = '—';
+  document.getElementById('stat-scope-lbl').textContent = 'Attendance';
   document.getElementById('stat-major').textContent    = '—';
 }
 
@@ -689,9 +697,28 @@ function resetMeeting() {
 function unlockStep(n) {
   const pill = document.getElementById(`pill-${n}`);
   if (pill) pill.classList.remove('locked');
+  if (n === 3) {
+    // Step 3 = scope buttons; enable them but don't touch post-scope yet
+    document.getElementById('btn-quarter').disabled = false;
+    document.getElementById('btn-meeting').disabled = false;
+  }
 }
 
 function lockStep(n) {
   const pill = document.getElementById(`pill-${n}`);
   if (pill) pill.classList.add('locked');
+  if (n === 3) {
+    // Step 3 relock: disable scope buttons, clear active state, cascade lock post-scope
+    document.getElementById('btn-quarter').disabled = true;
+    document.getElementById('btn-meeting').disabled = true;
+    document.getElementById('btn-quarter').classList.remove('active');
+    document.getElementById('btn-meeting').classList.remove('active');
+    setPostScopeEnabled(false);
+  }
+}
+
+function setPostScopeEnabled(enabled) {
+  document.getElementById('year-chart-type').disabled = !enabled;
+  document.getElementById('major-chart-type').disabled = !enabled;
+  document.getElementById('palette-grid').classList.toggle('locked', !enabled);
 }

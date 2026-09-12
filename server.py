@@ -103,6 +103,8 @@ def api_meetings():
 def api_generate():
     body = request.json or {}
     files = body.get("files", [])
+    focus_meeting_name = body.get("focus_meeting_name")
+
     if not files:
         return jsonify({"error": "No files provided"}), 400
 
@@ -112,14 +114,31 @@ def api_generate():
     if df.empty:
         return jsonify({"error": "No data loaded after standardization"}), 400
 
+    per_meeting_lookup = df["__meeting"].value_counts().to_dict()
+    per_meeting_counts = [
+        {"name": f["name"], "count": int(per_meeting_lookup.get(f["name"], 0))}
+        for f in files
+    ]
+
+    if focus_meeting_name:
+        agg_df = df[df["__meeting"] == focus_meeting_name]
+        if agg_df.empty:
+            return jsonify({
+                "error": f"No data found for meeting: {focus_meeting_name}"
+            }), 400
+    else:
+        agg_df = df
+
     result = {
-        "total": int(len(df)),
-        "meetings_count": int(df["__meeting"].nunique()),
+        "total": int(len(agg_df)),
+        "meetings_count": int(agg_df["__meeting"].nunique()),
+        "per_meeting_counts": per_meeting_counts,
+        "focus_meeting_name": focus_meeting_name,
     }
 
-    for col in ["Year", "Gender", "Major"]:
-        if col in df.columns:
-            counts = df[col].value_counts()
+    for col in ["Year", "Major"]:
+        if col in agg_df.columns:
+            counts = agg_df[col].value_counts()
             if col == "Year":
                 sorted_pairs = sorted(
                     counts.items(), key=lambda x: YEAR_ORDER.get(x[0], 50)

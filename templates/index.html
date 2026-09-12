@@ -111,10 +111,10 @@
           <span class="step-pill locked" id="pill-3">3</span>
           Meeting Scope
         </div>
-        <div class="scope-toggle">
-          <button class="scope-btn active" id="btn-quarter" onclick="setScope('quarter')">Entire Quarter</button>
-          <button class="scope-btn" id="btn-meeting" onclick="setScope('meeting')">Specific</button>
-        </div>
+          <div class="scope-toggle">
+            <button class="scope-btn" id="btn-quarter" onclick="setScope('quarter')" disabled>Entire Quarter</button>
+            <button class="scope-btn" id="btn-meeting" onclick="setScope('meeting')" disabled>Specific</button>
+          </div>
         <select class="sel mt-xs" id="meeting-select" disabled style="display:none;">
           <option value="">Select a meeting…</option>
         </select>
@@ -130,7 +130,7 @@
     <div class="config-block">
       <div class="config-row">
         <span class="config-label">Year</span>
-        <select class="sel sel-sm" id="year-chart-type">
+        <select class="sel sel-sm" id="year-chart-type" disabled>
           <option value="bar">Bar</option>
           <option value="horizontalBar">Horiz. Bar</option>
           <option value="pie">Pie</option>
@@ -138,17 +138,8 @@
         </select>
       </div>
       <div class="config-row">
-        <span class="config-label">Gender</span>
-        <select class="sel sel-sm" id="gender-chart-type">
-          <option value="bar">Bar</option>
-          <option value="horizontalBar">Horiz. Bar</option>
-          <option value="pie" selected>Pie</option>
-          <option value="none">Hide</option>
-        </select>
-      </div>
-      <div class="config-row">
         <span class="config-label">Major</span>
-        <select class="sel sel-sm" id="major-chart-type">
+        <select class="sel sel-sm" id="major-chart-type" disabled>
           <option value="bar">Bar</option>
           <option value="horizontalBar" selected>Horiz. Bar</option>
           <option value="pie">Pie</option>
@@ -161,7 +152,7 @@
 
     <!-- Palette -->
     <div class="sidebar-section-label">COLOR PALETTE</div>
-    <div class="palette-grid" id="palette-grid"></div>
+    <div class="palette-grid locked" id="palette-grid"></div>
 
     <!-- Generate -->
     <button class="gen-btn" id="gen-btn" onclick="generate()" disabled>
@@ -178,12 +169,6 @@
       <div>
         <h1 class="topbar-title">Meeting Metrics Dashboard</h1>
         <div class="topbar-crumb" id="topbar-crumb">Select data from the left panel to get started</div>
-      </div>
-      <div class="topbar-right">
-        <div class="status-chip" id="status-chip">
-          <span class="chip-dot"></span>
-          <span id="status-text">Ready</span>
-        </div>
       </div>
     </header>
 
@@ -209,11 +194,11 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon icon-cyan">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         </div>
         <div class="stat-body">
-          <div class="stat-val" id="stat-gender">—</div>
-          <div class="stat-lbl">Gender Ratio (M/F)</div>
+          <div class="stat-val" id="stat-scope">—</div>
+          <div class="stat-lbl" id="stat-scope-lbl">Attendance</div>
         </div>
       </div>
       <div class="stat-card">
@@ -281,23 +266,6 @@
               <canvas id="year-canvas"></canvas>
             </div>
           </div>
-
-          <!-- Gender -->
-          <div class="chart-card" id="gender-card">
-            <div class="chart-card-header">
-              <div>
-                <div class="chart-card-title" id="gender-title">Gender Distribution</div>
-                <div class="chart-card-sub" id="gender-sub"></div>
-              </div>
-              <button class="dl-btn" onclick="downloadChart('gender-canvas', 'Gender Distribution')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              </button>
-            </div>
-            <div class="canvas-wrap" id="gender-wrap">
-              <canvas id="gender-canvas"></canvas>
-            </div>
-          </div>
-
           <!-- Major -->
           <div class="chart-card" id="major-card">
             <div class="chart-card-header">

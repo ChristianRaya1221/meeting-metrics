@@ -26,7 +26,6 @@ SCOPES = [
 
 ALIASES = {
     "year": ["grade level", "grade", "year", "academic year", "class standing", "standing"],
-    "gender": ["gender", "gender identity", "what is your gender", "pronouns"],
     "major": ["major", "major/department", "what is your major", "field of study", "department"],
 }
 
@@ -213,20 +212,6 @@ def normalize_year(val: str) -> str:
         return "(blank)"
     return mapping.get(v, val.strip())
 
-
-def normalize_gender(val: str) -> str:
-    v = normalize_text(val)
-    mapping = {
-        "male": "Male", "m": "Male", "man": "Male",
-        "female": "Female", "f": "Female", "woman": "Female",
-        "nonbinary": "Non-binary", "non-binary": "Non-binary",
-        "prefer not to say": "Prefer not to say",
-    }
-    if v == "":
-        return "(blank)"
-    return mapping.get(v, val.strip())
-
-
 def normalize_major(val: str) -> str:
     raw = (val or "").strip()
     if raw == "":
@@ -312,10 +297,9 @@ def standardized_dataframe_for_sheet(sheets, file):
 
     header = list(data_frame_raw.columns)
     years_col = find_column(header, ALIASES["year"])
-    gender_col = find_column(header, ALIASES["gender"])
     major_col = find_column(header, ALIASES["major"])
 
-    if not years_col and not gender_col and not major_col:
+    if not years_col and not major_col:
         return pd.DataFrame()
 
     rename_map = {}
@@ -324,25 +308,19 @@ def standardized_dataframe_for_sheet(sheets, file):
     if years_col:
         selected_cols.append(years_col)
         rename_map[years_col] = "Year"
-    if gender_col:
-        selected_cols.append(gender_col)
-        rename_map[gender_col] = "Gender"
     if major_col:
         selected_cols.append(major_col)
         rename_map[major_col] = "Major"
 
     df = data_frame_raw[selected_cols].copy().rename(columns=rename_map)
 
-    # Ensure all 3 exist
+    # Ensure both exist
     if "Year" not in df.columns:
         df["Year"] = "(blank)"
-    if "Gender" not in df.columns:
-        df["Gender"] = "(blank)"
     if "Major" not in df.columns:
         df["Major"] = "(blank)"
 
     df["Year"] = df["Year"].apply(normalize_year)
-    df["Gender"] = df["Gender"].apply(normalize_gender)
     df["Major"] = df["Major"].apply(normalize_major)
 
     df["__meeting"] = file["name"]
@@ -357,6 +335,6 @@ def load_selected_data_frames(sheets, selected_files):
             dataframes.append(df)
 
     if not dataframes:
-        return pd.DataFrame(columns=["Year", "Gender", "Major", "__meeting"])
+        return pd.DataFrame(columns=["Year", "Major", "__meeting"])
 
     return pd.concat(dataframes, ignore_index=True)
