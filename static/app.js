@@ -74,6 +74,29 @@ function hideToast() {
   clearTimeout(_toastTimer);
 }
 
+// ══════════════════════════════════════════
+//  MOBILE SIDEBAR TOGGLE
+// ══════════════════════════════════════════
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const button = document.getElementById('mobile-menu-btn');
+  const backdrop = document.getElementById('sidebar-backdrop');
+
+  sidebar.classList.toggle('open');
+  button.classList.toggle('open');
+  backdrop.classList.toggle('open');
+}
+
+function closeSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const button = document.getElementById('mobile-menu-btn');
+  const backdrop = document.getElementById('sidebar-backdrop');
+
+  sidebar.classList.remove('open');
+  button.classList.remove('open');
+  backdrop.classList.remove('open');
+}
+
 // ── Register Chart.js datalabels plugin ──
 Chart.register(ChartDataLabels);
 
@@ -374,6 +397,14 @@ async function generate() {
     showPanel('charts');
     setStatus('active', 'Data loaded');
     updateBreadcrumb();
+    state.chartData = data;
+    updateStats(data);
+    renderCharts(data);
+    showPanel('charts');
+    setStatus('active', 'Data loaded');
+    updateBreadcrumb();
+    closeSidebar();
+
   } catch (e) {
     showPanel('error');
     document.getElementById('error-msg').textContent = e.message;
@@ -720,23 +751,29 @@ function downloadChart(canvasId, name) {
 //  UI HELPERS
 // ══════════════════════════════════════════
 function showPanel(panel) {
-  ['empty-state','loading-state','error-state','charts-area'].forEach(id => {
+  const overlay = document.getElementById('loading-overlay');
+
+  // Loading is now a full-viewport overlay, not an inline panel.
+  // Handle it separately from empty/error/charts which still swap inline.
+  if (panel === 'loading') {
+    overlay.classList.add('show');
+    startTypewriter();
+    return;
+  }
+
+  // Any non-loading panel hides the overlay
+  overlay.classList.remove('show');
+  stopTypewriter();
+
+  ['empty-state','error-state','charts-area'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
   const map = {
     empty:   'empty-state',
-    loading: 'loading-state',
     error:   'error-state',
     charts:  'charts-area',
   };
   if (map[panel]) document.getElementById(map[panel]).style.display = '';
-
-  // Start typewriter when loader shows, stop when it hides
-  if (panel === 'loading') {
-    startTypewriter();
-  } else {
-    stopTypewriter();
-  }
 }
 
 function setStatus(type, text) {

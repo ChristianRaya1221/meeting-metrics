@@ -105,26 +105,6 @@ body { display: flex; overflow: hidden; height: 100vh; }
   color: var(--txt);
 }
 
-/* Nav */
-.sidebar-nav { display: flex; flex-direction: column; gap: 2px; margin-bottom: 16px; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px;
-  border-radius: var(--radius-sm);
-  color: var(--txt2);
-  text-decoration: none;
-  font-size: 13px; font-weight: 500;
-  transition: all var(--transition);
-}
-.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-.nav-item:hover { background: rgba(255,255,255,0.05); color: var(--txt); }
-.nav-item.active {
-  background: linear-gradient(90deg, rgba(124,58,237,0.22), rgba(99,102,241,0.08));
-  color: #c4b5fd;
-  border-left: 2px solid var(--accent);
-  padding-left: 10px;
-}
-
 /* Divider */
 .sidebar-divider {
   height: 1px;
@@ -366,6 +346,30 @@ body { display: flex; overflow: hidden; height: 100vh; }
   gap: 20px; text-align: center;
 }
 
+/* ═══════════════════════════════════════
+   LOADING OVERLAY (full-viewport, above everything)
+═══════════════════════════════════════ */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(5, 8, 15, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+}
+.loading-overlay.show {
+  display: flex;
+}
+.loading-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
 /* ── SHPE spiral loader ── */
 .shpe-loader {
   width: 60px;
@@ -538,14 +542,165 @@ body { display: flex; overflow: hidden; height: 100vh; }
   pointer-events: none;
 }
 
+/* ═══════════════════════════════════════
+   MOBILE MENU (hamburger + backdrop)
+═══════════════════════════════════════ */
+
+/* Hamburger button — hidden on desktop, shown on mobile via media query below */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 18px;
+  left: 16px;
+  width: 32px;
+  height: 32px;
+  z-index: 10001;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  transition: background var(--transition);
+}
+.mobile-menu-btn:hover { background: var(--card-bg2); }
+
+.mobile-menu-line {
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: var(--txt);
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+  transform-origin: center;
+}
+
+/* Hamburger → X transform when sidebar is open */
+.mobile-menu-btn.open .mobile-menu-line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.mobile-menu-btn.open .mobile-menu-line:nth-child(2) {
+  opacity: 0;
+}
+.mobile-menu-btn.open .mobile-menu-line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Backdrop — semi-transparent overlay behind the open sidebar */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.sidebar-backdrop.open {
+  opacity: 1;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1100px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .charts-grid { grid-template-columns: 1fr 1fr; }
 }
+
 @media (max-width: 760px) {
-  .sidebar { display: none; }
-  .stats-row { grid-template-columns: 1fr 1fr; padding: 12px; }
-  .charts-grid { grid-template-columns: 1fr; }
-  .topbar, .content-area { padding-left: 14px; padding-right: 14px; }
+  /* Show the hamburger */
+  .mobile-menu-btn { display: flex; }
+
+  /* Align sidebar logo vertically with X button */
+  .sidebar-logo {
+    padding-left: 44px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  /* Sidebar becomes a full-screen slide-in panel */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Backdrop visible when sidebar is open */
+  .sidebar.open ~ .sidebar-backdrop,
+  .sidebar-backdrop.open {
+    display: block;
+  }
+
+  /* Main content: prevent horizontal overflow from stray wide children */
+  .main {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .content-area {
+    overflow-x: hidden;
+  }
+
+  /* Give topbar room for the hamburger button */
+  .topbar {
+    padding-left: 68px;
+    padding-right: 14px;
+  }
+
+  /* Stat cards: 2x2 grid, row auto-sizes to tallest card, all cards in a row match */
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: minmax(96px, auto);
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+  .stat-card {
+    padding: 12px 14px;
+    gap: 10px;
+    min-width: 0;
+  }
+  .stat-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+  .stat-icon svg { width: 16px; height: 16px; }
+  .stat-body {
+    min-width: 0;
+    flex: 1;
+  }
+  .stat-val {
+    font-size: 16px;
+    line-height: 1.2;
+    word-break: break-word;
+    /* No truncation — text wraps freely, card grows to fit */
+  }
+  .stat-lbl { font-size: 10px; }
+
+  /* Charts always stack single column on mobile — override col-1/2/3 classes */
+  .charts-grid,
+  .charts-grid.col-1,
+  .charts-grid.col-2,
+  .charts-grid.col-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .content-area {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
 }

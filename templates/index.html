@@ -57,6 +57,17 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 </head>
 <body>
+
+    <!-- Mobile menu toggle — hidden on desktop via CSS -->
+  <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">
+    <span class="mobile-menu-line"></span>
+    <span class="mobile-menu-line"></span>
+    <span class="mobile-menu-line"></span>
+  </button>
+
+  <!-- Backdrop for when sidebar is open on mobile -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
   <!-- Full-viewport page splash — hides on window.load -->
   <div id="page-splash">
     <img src="/static/img/shpe_loader.gif" alt="Loading" />
@@ -68,15 +79,6 @@
       <div class="sidebar-logo">
         <span class="logo-brand">SHPE</span><span class="logo-descriptor">Analytics</span>
       </div>
-
-    <nav class="sidebar-nav">
-      <a class="nav-item active" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </a>
-    </nav>
-
-    <div class="sidebar-divider"></div>
 
     <!-- Data Selection -->
     <div class="sidebar-section-label">DATA SELECTION</div>
@@ -231,11 +233,6 @@
         <div class="empty-sub">Select a year → quarter → scope from the left panel,<br>then click <strong>Generate Charts</strong> to visualize attendance data.</div>
       </div>
 
-      <!-- Loading state -->
-      <div class="loading-state" id="loading-state" style="display:none;">
-        <img class="shpe-loader" src="/static/img/shpe_loader.gif" alt="Loading" />
-        <div class="loader-typewriter" id="loader-typewriter">Authenticating<span class="tw-cursor">▍</span></div>
-      </div>
 
       <!-- Error state -->
       <div class="error-state" id="error-state" style="display:none;">
@@ -315,6 +312,14 @@
     <button class="toast-close" onclick="hideToast()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
+  </div>
+
+    <!-- Full-viewport loading overlay — appears above everything during generate() -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-overlay-inner">
+      <img class="shpe-loader" src="/static/img/shpe_loader.gif" alt="Loading" />
+      <div class="loader-typewriter" id="loader-typewriter">Authenticating<span class="tw-cursor">▍</span></div>
+    </div>
   </div>
 
   <script src="/static/app.js"></script>
