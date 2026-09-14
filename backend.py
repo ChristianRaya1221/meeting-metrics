@@ -19,6 +19,7 @@ load_dotenv()
 
 # -------- Drive/API Setup --------------
 SERVICE_ACCOUNT_FILE = os.environ.get("SERVICE_ACCOUNT_FILE", "service_account.json")
+SERVICE_ACCOUNT_JSON = os.environ.get("SERVICE_ACCOUNT_JSON")
 
 SCOPES = [
     "https://www.googleapis.com/auth/drive.readonly",
@@ -78,9 +79,18 @@ def execute_with_retries(request, max_attempts: int = 6):
 
 
 def get_services():
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES
-    )
+    # Prefer JSON from env var (for production deploys like Render where the
+    # filesystem doesn't hold secrets). Fall back to file for local development.
+    if SERVICE_ACCOUNT_JSON:
+        import json
+        creds_info = json.loads(SERVICE_ACCOUNT_JSON)
+        creds = service_account.Credentials.from_service_account_info(
+            creds_info, scopes=SCOPES
+        )
+    else:
+        creds = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
 
     # fresh transport (helps prevent stale SSL connections)
     authed_http = AuthorizedHttp(creds, http=httplib2.Http(timeout=60))
