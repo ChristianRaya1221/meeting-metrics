@@ -397,12 +397,6 @@ async function generate() {
     showPanel('charts');
     setStatus('active', 'Data loaded');
     updateBreadcrumb();
-    state.chartData = data;
-    updateStats(data);
-    renderCharts(data);
-    showPanel('charts');
-    setStatus('active', 'Data loaded');
-    updateBreadcrumb();
     closeSidebar();
 
   } catch (e) {
@@ -529,18 +523,16 @@ function buildChart(canvasId, type, dataObj, palette) {
   const isPie  = type === 'pie';
   const isHBar = type === 'horizontalBar';
 
-  const baseFont = { family: 'Inter, system-ui, sans-serif', color: '#94a3b8' };
-
   const commonPlugins = {
     legend: {
       display: isPie,
       labels: { color: '#e2e8f0', font: { size: 11 }, boxWidth: 12, padding: 14 },
     },
     tooltip: {
-      backgroundColor: 'rgba(13,13,40,0.92)',
+      backgroundColor: 'rgba(11,17,28,0.92)',
       titleColor: '#e2e8f0',
       bodyColor: '#94a3b8',
-      borderColor: 'rgba(124,58,237,0.4)',
+      borderColor: 'rgba(74,158,255,0.4)',
       borderWidth: 1,
       padding: 10,
       callbacks: {
@@ -707,7 +699,7 @@ function buildTrendChart(perMeetingCounts, focusName, palette) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: 'rgba(13,13,40,0.92)',
+          backgroundColor: 'rgba(11,17,28,0.92)',
           titleColor: '#e2e8f0',
           bodyColor: '#94a3b8',
           borderColor: brand + '66',
@@ -737,7 +729,7 @@ function downloadChart(canvasId, name) {
   off.height = canvas.height * 2;
   const ctx = off.getContext('2d');
   ctx.scale(2, 2);
-  ctx.fillStyle = '#111130';
+  ctx.fillStyle = '#0B111C';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(canvas, 0, 0);
 
@@ -774,14 +766,6 @@ function showPanel(panel) {
     charts:  'charts-area',
   };
   if (map[panel]) document.getElementById(map[panel]).style.display = '';
-}
-
-function setStatus(type, text) {
-  // Status chip removed from UI; retained as no-op so existing call sites don't error.
-  const chip = document.getElementById('status-chip');
-  if (!chip) return;
-  chip.className = `status-chip ${type}`;
-  document.getElementById('status-text').textContent = text;
 }
 
 function setLoading(val) {
