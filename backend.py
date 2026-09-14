@@ -192,7 +192,10 @@ def sort_year(folder_name: str):
 
 def term_sort_key(folder_name: str):
     t = folder_name.strip().lower()
-    return (TERM_ORDER.get(t, 99), t)
+    for term, order in TERM_ORDER.items():
+        if term in t:
+            return (order, t)
+    return (99, t)
 
 
 def normalize_text(s: str):
