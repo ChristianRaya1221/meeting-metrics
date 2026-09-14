@@ -1,20 +1,21 @@
 from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from google_auth_httplib2 import AuthorizedHttp
 import os
-from dotenv import load_dotenv
-load_dotenv()
-
-import httplib2
 import random
 import re
 import socket
 import ssl
 import threading
 import time
-import pandas as pd
 
+import httplib2
+import pandas as pd
+from dotenv import load_dotenv
+from google.oauth2 import service_account
+from google_auth_httplib2 import AuthorizedHttp
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+load_dotenv()
 
 # -------- Drive/API Setup --------------
 SERVICE_ACCOUNT_FILE = os.environ.get("SERVICE_ACCOUNT_FILE", "service_account.json")
@@ -155,7 +156,7 @@ def find_general_meetings_folder(folders):
             return f
         if "general meeting" in name:
             return f
-        if "gm" == name or " gm " in f" {name} ":
+        if name == "gm" or "gm" in name.split():
             return f
 
     return None

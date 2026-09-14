@@ -4,6 +4,7 @@ Run with:  python test_connection.py
 """
 
 import os
+import json
 from dotenv import load_dotenv
 load_dotenv()
 ROOT_FOLDER_ID = os.environ.get("ROOT_FOLDER_ID")
@@ -13,7 +14,6 @@ print("  SHPE Analytics — Service Account Diagnostic")
 print("=" * 55)
 
 # 1. Check credentials file
-import os
 cred_path = os.path.join(os.path.dirname(__file__), "service_account.json")
 if not os.path.exists(cred_path):
     print(f"\n[FAIL] service_account.json not found at:\n       {cred_path}")
@@ -21,7 +21,7 @@ if not os.path.exists(cred_path):
 print(f"\n[OK]  service_account.json found")
 
 # 2. Parse the JSON to show which account is being used
-import json
+
 with open(cred_path) as f:
     cred_data = json.load(f)
 print(f"[OK]  Service account email: {cred_data.get('client_email', '(not found)')}")
@@ -69,7 +69,7 @@ except Exception as e:
     print("     → Open the folder in Drive → Share → paste the service account email.")
     print("  2. The Drive API is not enabled for this project.")
     print("     → console.cloud.google.com → APIs & Services → Enable 'Google Drive API'")
-    print("  3. The ROOT_FOLDER_ID in server.py / test_connection.py is wrong.")
+    print("  3. The ROOT_FOLDER_ID in .env is wrong.")
     print(f"     → Current value: {ROOT_FOLDER_ID}")
     exit(1)
 
