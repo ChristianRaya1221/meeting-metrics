@@ -385,7 +385,6 @@ async function generate() {
           'This meeting\'s spreadsheet doesn\'t contain recognised Year or Major columns.'
         );
         showPanel('empty');
-        setStatus('', 'Ready');
         return;
       }
       throw new Error(msg);
@@ -395,14 +394,12 @@ async function generate() {
     updateStats(data);
     renderCharts(data);
     showPanel('charts');
-    setStatus('active', 'Data loaded');
     updateBreadcrumb();
     closeSidebar();
 
   } catch (e) {
     showPanel('error');
     document.getElementById('error-msg').textContent = e.message;
-    setStatus('error', 'Error');
     showToast('Failed to load data', e.message);
   } finally {
     setLoading(false);
@@ -771,7 +768,6 @@ function showPanel(panel) {
 function setLoading(val) {
   state.loading = val;
   document.getElementById('gen-btn').disabled = val || !canGenerate();
-  if (val) setStatus('loading', 'Loading…');
 }
 
 function canGenerate() {
@@ -814,7 +810,6 @@ function clearCharts() {
   Object.values(charts).forEach(c => c && c.destroy());
   charts = { year: null, trend: null, major: null };
   showPanel('empty');
-  setStatus('', 'Ready');
   document.getElementById('stat-total').textContent    = '-';
   document.getElementById('stat-meetings').textContent = '-';
   document.getElementById('stat-scope').textContent    = '-';
