@@ -2,7 +2,9 @@
 
 A Flask dashboard that pulls attendance data from Google Sheets and turns it into charts that board members can actually use. Built for the Society of Hispanic Professional Engineers chapter at UC Irvine.
 
-**Live Demo:**
+**Live Demo:**[YOUR_DEPLOY_URL_HERE]
+
+**Video walkthrough:** [YOUR_VIDEO_URL_HERE]
 
 **Public Demo Data:** The deployed version reads from a mock Google Drive folder, **NOT** real member data. However, the mock data is modeled on real attendance patterns shared by the current SHPE UCI president (as of September 12, 2026).
 
@@ -52,10 +54,6 @@ So this repo is showable without exposing real member data, Point `ROOT_FOLDER_I
 
 **Auth**
 - Google service account with read-only scopes on Drive + Sheets
-
-## Screenshots
-
-_TODO: add screenshots here_
 
 ## Running it locally
 
