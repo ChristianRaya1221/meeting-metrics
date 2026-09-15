@@ -4,6 +4,8 @@ A Flask dashboard that pulls attendance data from Google Sheets and turns it int
 
 >**Live demo:** [meeting-metrics.onrender.com](https://meeting-metrics.onrender.com)
 
+**Note on the live demo:** The website is built from a free hosting service called Render. The free tier host has only 512MB memory limit. After several consecutive chart generations in one session, the server may briefly restart (returns a 502 error). Refresh the page to continue using Demo. 
+
 **Public Demo Data:** The deployed version reads from a mock Google Drive folder, **NOT** real member data. However, the mock data is modeled on real attendance patterns shared by the current SHPE UCI president (as of September 12, 2026).
 
 ---
