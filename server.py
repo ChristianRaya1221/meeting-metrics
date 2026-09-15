@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 import os, sys
 from dotenv import load_dotenv
+import gc
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -147,6 +148,8 @@ def api_generate():
             else:
                 sorted_pairs = sorted(counts.items(), key=lambda x: -x[1])
                 result[col.lower()] = {k: int(v) for k, v in sorted_pairs}
+    del df, agg_df
+    gc.collect()
 
     return jsonify(result)
 

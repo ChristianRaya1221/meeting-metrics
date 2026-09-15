@@ -351,4 +351,6 @@ def load_selected_data_frames(sheets, selected_files):
     if not dataframes:
         return pd.DataFrame(columns=["Year", "Major", "__meeting"])
 
-    return pd.concat(dataframes, ignore_index=True)
+    result = pd.concat(dataframes, ignore_index=True)
+    dataframes.clear()  # release references to intermediate DataFrames
+    return result
