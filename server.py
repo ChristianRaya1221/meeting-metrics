@@ -1,7 +1,12 @@
-from flask import Flask, jsonify, request, render_template
+
 import os, sys
-from dotenv import load_dotenv
 import gc
+
+from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask import Flask, jsonify, request, render_template
+
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -18,6 +23,12 @@ from backend import (
 )
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=["60 per minute"],
+    storage_uri="memory://",
+)
 
 load_dotenv()
 ROOT_FOLDER_ID = os.environ.get("ROOT_FOLDER_ID")
@@ -101,6 +112,7 @@ def api_meetings():
 
 
 @app.route("/api/generate", methods=["POST"])
+@limiter.limit("10 per minute")
 def api_generate():
     body = request.json or {}
     files = body.get("files", [])
